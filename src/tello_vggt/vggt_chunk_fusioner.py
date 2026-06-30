@@ -4,18 +4,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Callable
 import numpy as np
 
-
-@dataclass
-class VGGTChunkResult:
-    """
-    Résultat d'inférence pour un batch de frames.
-    Les tenseurs sont convertis en numpy pour être plus simples à manipuler.
-    """
-    extrinsics: np.ndarray
-    intrinsics: np.ndarray
-    depth: np.ndarray
-    depth_conf: np.ndarray
-    raw: Dict[str, Any]
+from tello_vggt.vggt_chunk_result import VGGTChunkResult
 
 
 @dataclass

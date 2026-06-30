@@ -8,8 +8,15 @@ import numpy as np
 import trimesh
 import pickle
 
-from visual_util import predictions_to_glb
-from vggt.utils.geometry import unproject_depth_map_to_point_map
+try:
+    from visual_util import predictions_to_glb
+except ImportError:
+    predictions_to_glb = None
+
+try:
+    from vggt.utils.geometry import unproject_depth_map_to_point_map
+except ImportError:
+    unproject_depth_map_to_point_map = None
 
 
 @dataclass
@@ -122,6 +129,12 @@ class VGGTGlbExporter:
         result: VGGTChunkResult,
         frames: Optional[Sequence[np.ndarray]] = None,
     ) -> dict[str, Any]:
+        if unproject_depth_map_to_point_map is None:
+            raise ImportError(
+                "La dépendance 'vggt.utils.geometry' n'est pas disponible. "
+                "Installez vggt_omega avec: pip install vggt_omega"
+            )
+        
         extrinsic = self._ensure_extrinsic_3x4(result.extrinsics)
         depth = self._ensure_depth_4d(result.depth)
         depth_conf = self._ensure_conf_3d(result.depth_conf)
@@ -166,6 +179,12 @@ class VGGTGlbExporter:
         """
         Exporte un GLB à partir d'un VGGTChunkResult.
         """
+        if predictions_to_glb is None:
+            raise ImportError(
+                "La dépendance 'visual_util' n'est pas disponible. "
+                "Vérifiez que le module est installé et accessible."
+            )
+        
         predictions = self.build_predictions(result, frames=frames)
 
         scene: trimesh.Scene = predictions_to_glb(

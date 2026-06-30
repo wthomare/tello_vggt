@@ -34,6 +34,11 @@ dependencies = [
     "psutil>=7.0",
     "pyyaml>=6.0",
 
+    # Configuration & CLI
+    "pydantic>=2.0",
+    "typer>=0.12",
+    "click>=8.0",
+
     # Science
     "matplotlib>=3.10",
     "pandas>=2.3",
@@ -54,24 +59,43 @@ vggt = [
     "safetensors>=0.5",
 ]
 
+gaussian-splatting = [
+    "diff-gaussian-rasterization>=0.2.0",
+    "simple-knn>=0.1",
+    "plyfile>=1.0",
+]
+
+deep-anything-v3 = [
+    "torch>=2.0",
+    "torchvision>=0.15",
+]
+
 dev = [
     "black>=25.1",
     "isort>=6.0",
     "ruff>=0.12",
     "pytest>=8.4",
     "pytest-cov>=6.2",
+    "pytest-mock>=3.14",
 ]
 
 wandb = [
     "wandb>=0.21",
 ]
 
+all = [
+    "tello-vggt[vggt,gaussian-splatting,deep-anything-v3,dev,wandb]",
+]
+
+[project.scripts]
+tello-vggt = "tello_vggt.cli.main:app"
+
 [tool.setuptools]
 py-modules = []
 
 [tool.setuptools.packages.find]
-where = ["."]
-include = ["src*"]
+where = ["src"]
+include = ["tello_vggt*"]
 
 [tool.black]
 line-length = 100

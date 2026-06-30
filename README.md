@@ -1,222 +1,234 @@
-# Tello VGGT Omega 3D Reconstruction
+# Tello VGGT-Omega 3D Reconstruction
 
-A complete 3D reconstruction pipeline based on Facebook's VGGT-Omega foundation model.
+A modern, production-ready 3D reconstruction pipeline for DJI Tello and video footage built around Facebook's VGGT-Omega foundation model.
 
-The project supports three different workflows:
-
-1. Live acquisition and reconstruction from a DJI Tello EDU drone.
-2. Reconstruction from an existing video file.
-3. Rebuilding a reconstruction from previously saved VGGT chunks.
-
-The pipeline is designed for long sequences and constrained GPU memory environments by processing data in overlapping chunks and saving intermediate results to disk.
+This repository now provides a unified CLI, configurable YAML settings, mission tracking, structured logging, Gaussian Splatting support, and semantic segmentation with Deep Anything V3.
 
 ---
 
-# Overview
+## ✨ Key Features
 
-Modern visual geometry foundation models can recover:
-
-* Camera poses
-* Camera intrinsics
-* Dense depth maps
-* Confidence maps
-* World-space point clouds
-
-directly from image sequences.
-
-VGGT-Omega performs this reconstruction from monocular image streams without requiring:
-
-* Camera calibration
-* SLAM pipelines
-* Structure-from-Motion preprocessing
-
-This project provides a complete orchestration layer around VGGT-Omega for acquisition, chunk management, fusion, persistence, and GLB export.
+- **Modern CLI**: `tello-vggt` with commands for recording, video reconstruction, rebuilding, Gaussian Splatting, and semantic segmentation.
+- **Configurable**: YAML-based configuration with Pydantic validation.
+- **Mission management**: Automatic mission directories, status tracking, and metadata persistence.
+- **Chunked processing**: Overlap-aware chunk generation for memory-efficient inference.
+- **GLB export**: Blender- and MeshLab-compatible output.
+- **Gaussian Splatting**: Render point clouds into splatted geometry.
+- **Semantic segmentation**: Deep Anything V3 integration for class-aware reconstruction.
+- **Structured logging**: Colored terminal output, file logging, and per-mission logs.
+- **Test coverage**: Pytest tests for config and mission workflows.
 
 ---
 
-# Features
+## 🚀 Quick Start
 
-* DJI Tello EDU support
-* Video file reconstruction
-* Chunk-based processing
-* Intermediate chunk persistence
-* Recovery after interruption
-* Overlap-aware chunk fusion
-* Automatic mission management
-* GLB export
-* Blender-compatible output
-* Jetson AGX Orin support
-* CUDA workstation support
+### 1. Install the package
 
----
+```bash
+cd /home/jetson/Desktop/tello_vggt
+pip install -e .
+```
 
-# Architecture
+To install optional extras:
 
-The project is organized around four core components.
+```bash
+pip install -e ".[all]"
+```
 
-## Video Acquisition
+### 2. Create configuration
 
-Responsible for:
+```bash
+tello-vggt init-config --output config.yaml
+```
 
-* Tello video streaming
-* Frame capture
-* Chunk generation
-* Overlap management
+Edit `config.yaml` to match your hardware, dataset, and mission preferences.
 
-Example:
+### 3. Run video reconstruction
 
-Chunk 0
+```bash
+tello-vggt video input.mp4 --config config.yaml
+```
 
-Frame 0 → 99
+### 4. View results
 
-Chunk 1
+The mission output is stored in a mission directory under `missions/`.
 
-Frame 95 → 194
-
-Chunk 2
-
-Frame 190 → 289
-
-The overlap allows chunks to be fused afterward.
+```bash
+ls missions/mission_001/output/
+```
 
 ---
 
-## VGGT-Omega Inference
+## 🧭 CLI Commands
 
-Responsible for:
+```bash
+tello-vggt --help
+```
 
-* Loading VGGT-Omega
-* Running inference
-* Producing reconstruction data
+### Main commands
 
-Outputs:
-
-* Camera extrinsics
-* Camera intrinsics
-* Depth maps
-* Confidence maps
-
----
-
-## Chunk Fusion
-
-Responsible for:
-
-* Detecting overlapping predictions
-* Removing duplicates
-* Merging trajectories
-* Producing a global reconstruction
-
-The fusion process uses overlap information between consecutive chunks.
+- `tello-vggt record [OPTIONS]` — Capture frames from a DJI Tello drone.
+- `tello-vggt video [VIDEO] [OPTIONS]` — Reconstruct a scene from a video file.
+- `tello-vggt rebuild [MISSION] [OPTIONS]` — Rebuild a mission from saved chunks.
+- `tello-vggt gaussian-splatting [MISSION] [OPTIONS]` — Run Gaussian Splatting on a mission.
+- `tello-vggt semantic-segmentation [MISSION] [OPTIONS]` — Apply Deep Anything V3 segmentation.
+- `tello-vggt list-missions` — List available missions.
+- `tello-vggt show-config` — Display the loaded configuration.
+- `tello-vggt init-config` — Generate a config template.
 
 ---
 
-## GLB Export
+## 🧪 Recommended Workflows
 
-Responsible for:
+### Video reconstruction
 
-* Point cloud generation
-* Camera visualization
-* Scene export
+```bash
+tello-vggt video input.mp4 --config config.yaml
+```
 
-Outputs:
+This workflow extracts frames, runs VGGT inference per chunk, fuses results, and exports a GLB file.
 
-* GLB files
-* Blender-compatible scenes
-* MeshLab-compatible scenes
+### Gaussian Splatting
+
+```bash
+tello-vggt gaussian-splatting missions/mission_001
+```
+
+Generates Gaussian-based rendering output from the reconstructed mission.
+
+### Semantic segmentation
+
+```bash
+tello-vggt semantic-segmentation missions/mission_001 --checkpoint deep_anything_v3.pt
+```
+
+Produces class-aware point clouds and segmentation masks.
+
+### Rebuild from existing chunks
+
+```bash
+tello-vggt rebuild missions/mission_001
+```
+
+Use this when chunks are already available but the final GLB export needs regeneration.
 
 ---
 
-# Project Structure
+## 🗂️ Mission Output Structure
+
+A mission directory typically contains:
 
 ```text
-project/
-│
-├── checkpoints/
-│   └── model.pt
-│
-├── missions/
-│
-├── src/
-│   └── tello_vggt/
-│
-├── run_tello_reconstruction.py
-├── run_video_reconstruction.py
-├── rebuild_mission.py
-│
-└── pyproject.toml
+missions/mission_001/
+├── frames/                    # Extracted frame images
+├── chunks/                    # Per-chunk VGGT inference results
+├── output/                    # Exported reconstruction
+│   └── reconstruction.glb
+├── gaussian_splatting/        # Optional advanced rendering output
+├── semantic_segmentation/     # Optional semantic output
+├── logs/                      # Mission logs
+└── mission.json               # Mission metadata
 ```
 
 ---
 
-# Hardware Requirements
+## ⚙️ Configuration
 
-## Recommended
+The project uses `config.example.yaml` as a template.
 
-* NVIDIA RTX 4060 Ti 16GB
-* 32 GB RAM
-* Ubuntu 24.04
-* Python 3.12
+Example configuration fields:
 
-## Minimum
+```yaml
+vggt:
+  checkpoint_path: "checkpoints/VGGT-Omega.pt"
+  image_resolution: 512
+  mode: balanced
+  device: cuda
+  half_precision: false
 
-* NVIDIA RTX 3080 10GB
-* 16 GB RAM
+inference:
+  chunk_size: 100
+  overlap: 5
+  batch_size: 16
 
-## Jetson
+acquisition:
+  fps: 30
+  fourcc: "mp4v"
 
-Supported:
+export:
+  confidence_threshold: 50.0
+  show_cameras: true
 
-* Jetson AGX Orin 64GB
+gaussian_splatting:
+  enabled: true
+  sh_degree: 3
+  iterations: 7000
 
-Inference will be slower but remains fully functional.
+missions_dir: "missions"
+logs_dir: "logs"
+log_level: "INFO"
+```
+
+Use `tello-vggt init-config --output config.yaml` to generate a starter file, then edit it for your environment.
 
 ---
 
-# Creating the Python Environment
+## 🧰 Installation Requirements
 
-Create a virtual environment:
+- Python 3.10+
+- `pip`
+- A CUDA-capable GPU is strongly recommended for VGGT inference.
+- Linux is the preferred platform; Jetson AGX Orin is supported.
+
+### Python dependencies
+
+Install the base dependencies with:
 
 ```bash
-python3.12 -m venv .venv
+pip install -e .
 ```
 
-Activate it:
+Optional extras:
+
+- `.[gaussian-splatting]` — Gaussian Splatting support
+- `.[deep-anything-v3]` — Deep Anything V3 semantic segmentation
+- `.[all]` — All optional dependencies
+
+---
+
+## 🔧 Development & Testing
+
+Run tests with:
 
 ```bash
-source .venv/bin/activate
+pytest tests/ -v
 ```
 
-Upgrade pip:
+For coverage:
 
 ```bash
-pip install --upgrade pip setuptools wheel
+pytest tests/ --cov=tello_vggt --cov-report=html
 ```
 
 ---
 
-# Installing PyTorch
+## 📌 Notes
 
-Example for CUDA-enabled desktop GPUs:
-
-```bash
-pip install torch torchvision torchaudio \
-    --index-url https://download.pytorch.org/whl/cu126
-```
-
-Verify CUDA availability:
-
-```bash
-python -c "import torch; print(torch.cuda.is_available())"
-```
-
-Expected output:
-
-```text
-True
-```
+- Legacy scripts such as `run_tello_reconstruction.py`, `run_video_reconstruction.py`, and `rebuild_mission.py` remain in the repository for compatibility, but the preferred interface is the new `tello-vggt` CLI.
+- Use `tello-vggt --help` or `tello-vggt <command> --help` to see available options.
+- If you need to change logging behavior, update `log_level` and `log_to_file` in your config.
 
 ---
+
+## 📘 Configuration Template
+
+A detailed configuration example is available in `config.example.yaml`.
+
+---
+
+## 🎯 Summary
+
+This repository now offers a polished, modern command-line interface and a structured pipeline for building 3D reconstructions from drone and video data. It is designed for repeatable missions, robust logging, and advanced post-processing with Gaussian Splatting and semantic segmentation.
 
 # Installing the Project
 

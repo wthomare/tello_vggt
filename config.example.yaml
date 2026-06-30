@@ -1,0 +1,57 @@
+# Tello VGGT-Omega Configuration File
+# Copy this to your project and modify as needed
+
+# VGGT-Omega Model Configuration
+vggt:
+  checkpoint_path: "checkpoints/VGGT-Omega.pt"
+  image_resolution: 512
+  mode: balanced                    # Options: balanced, max_size
+  enable_alignment: false
+  device: cuda                      # Options: cuda, cpu, mps
+  half_precision: false
+
+# Inference Processing
+inference:
+  chunk_size: 100                   # Frames per chunk
+  overlap: 5                        # Overlap between chunks
+  batch_size: 16
+  min_overlap_fusion: 1
+  max_overlap_fusion: 20
+  use_allclose_fusion: false
+
+# Video Acquisition
+acquisition:
+  fps: 30                           # Frames per second
+  frame_size: null                  # [width, height] or null for auto-detect
+  fourcc: "mp4v"
+  tello_battery_warning: 20         # Battery % to warn user
+
+# Export Settings
+export:
+  confidence_threshold: 50.0        # Point cloud filtering threshold
+  show_cameras: true                # Include camera frustums
+  mask_black_background: false
+  mask_white_background: false
+  mask_sky: false
+
+# Gaussian Splatting
+gaussian_splatting:
+  enabled: true                     # Enable Gaussian Splatting rendering
+  backend: gaussian_splatting       # Options: gaussian_splatting, deep_anything_v3
+  sh_degree: 3                      # Spherical harmonics degree (0-4)
+  densification_interval: 100
+  iterations: 7000
+  deep_anything_v3_checkpoint: null # Path to Deep Anything V3 checkpoint
+
+# Paths
+missions_dir: "missions"
+checkpoints_dir: "checkpoints"
+logs_dir: "logs"
+
+# Logging
+log_level: "INFO"                   # Options: DEBUG, INFO, WARNING, ERROR
+log_to_file: true
+
+# Performance
+gpu_memory_fraction: null           # null = auto, or set 0.0-1.0
+num_workers: 4
