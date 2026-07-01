@@ -115,6 +115,10 @@ class GaussianSplattingTrainer:
             import torch
         except ImportError:
             raise ImportError("PyTorch is required for Gaussian Splatting")
+
+        if self.device.startswith("cuda") and not torch.cuda.is_available():
+            logger.warning("CUDA requested but unavailable. Falling back to CPU.")
+            self.device = "cpu"
         
         logger.info("Starting Gaussian Splatting training...")
         logger.warning(
@@ -183,7 +187,11 @@ class GaussianSplattingTrainer:
                 "Using simplified point cloud extraction."
             )
             # Fallback: simple extraction
-            depth = vggt_result.depth.squeeze(-1)  # (S, H, W)
+            depth = np.asarray(vggt_result.depth)
+            if depth.ndim == 4 and depth.shape[-1] == 1:
+                depth = depth[..., 0]
+            elif depth.ndim != 3:
+                raise ValueError(f"Unsupported depth shape for point extraction: {depth.shape}")
             h, w = depth.shape[-2:]
             
             points = []

@@ -11,7 +11,11 @@ from tello_vggt.core.config import AppConfig
 from tello_vggt.core.mission import Mission
 from tello_vggt.core.logging_config import get_logger, log_section
 from tello_vggt.mission_loader import MissionLoader, load_frames
-from tello_vggt.rendering.gaussian_splatting import GaussianSplattingTrainer, GaussianSplattingRenderer
+from tello_vggt.rendering.gaussian_splatting import (
+    GaussianSplattingResult,
+    GaussianSplattingTrainer,
+    GaussianSplattingRenderer,
+)
 
 logger = get_logger(__name__)
 
@@ -49,10 +53,10 @@ def cmd_gaussian_splatting(
     
     logger.info(f"📂 Loaded mission: {mission.mission_id}")
     
-    # Check if Gaussian Splatting is enabled
     if not config.gaussian_splatting.enabled:
-        logger.warning("Gaussian Splatting is disabled in config")
-        return None
+        logger.warning(
+            "Gaussian Splatting is disabled in config, but the command was requested explicitly."
+        )
     
     # Load chunks
     log_section(logger, "Loading Mission Data")
@@ -83,7 +87,11 @@ def cmd_gaussian_splatting(
     output_dir = Path(output) if output else mission.output_dir / "gaussian_splatting"
     output_dir.mkdir(parents=True, exist_ok=True)
     
-    # Train Gaussian Splatting
+    gs_path = output_dir / f"{mission.mission_id}_gaussians.npz"
+    ply_path = output_dir / f"{mission.mission_id}_gaussians.ply"
+    renderer = GaussianSplattingRenderer(device=config.vggt.device)
+
+    # Train or reuse Gaussian Splatting initialization
     if not skip_training:
         log_section(logger, "Training Gaussian Splatting")
         
@@ -104,18 +112,19 @@ def cmd_gaussian_splatting(
             images=frames_array,
         )
         
-        # Save Gaussian Splatting result
-        gs_path = output_dir / f"{mission.mission_id}_gaussians.npz"
         gs_result.save(gs_path)
         
         logger.info(f"✅ Gaussian Splatting result saved to {gs_path}")
-        
-        # Export PLY
-        ply_path = output_dir / f"{mission.mission_id}_gaussians.ply"
-        renderer = GaussianSplattingRenderer(device=config.vggt.device)
-        renderer.export_ply(gs_result, ply_path)
-        
-        logger.info(f"✅ Exported PLY to {ply_path}")
+    else:
+        if not gs_path.exists():
+            raise FileNotFoundError(
+                f"No existing Gaussian Splatting result found for --skip-training: {gs_path}"
+            )
+        gs_result = GaussianSplattingResult.load(gs_path)
+        logger.info(f"Loaded existing Gaussian Splatting result from {gs_path}")
+
+    renderer.export_ply(gs_result, ply_path)
+    logger.info(f"✅ Exported PLY to {ply_path}")
     
     # Process with Deep Anything V3 if available
     if config.gaussian_splatting.backend == "deep_anything_v3":

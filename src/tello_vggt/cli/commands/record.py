@@ -6,11 +6,8 @@ from pathlib import Path
 from typing import Optional
 from datetime import datetime
 
-import torch
-from tqdm import tqdm
-
 from tello_vggt.core.config import AppConfig
-from tello_vggt.core.mission import Mission, MissionManager
+from tello_vggt.core.mission import Mission, MissionManager, MissionStatus
 from tello_vggt.core.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -40,8 +37,11 @@ def cmd_record(
     # Create mission
     mission_manager = MissionManager(config.missions_dir)
     if output_dir:
-        mission_id = Path(output_dir).name
-        mission = Mission.create(config.missions_dir, mission_id)
+        output_dir = Path(output_dir)
+        if output_dir.exists():
+            raise FileExistsError(f"Mission already exists: {output_dir}")
+        mission = Mission(output_dir.name, output_dir)
+        mission.setup()
     else:
         mission = mission_manager.create_mission()
     
@@ -69,7 +69,7 @@ def cmd_record(
         frame_count = 0
         start_time = datetime.now()
         
-        mission.set_status("recording")
+        mission.set_status(MissionStatus.RECORDING)
         
         while True:
             frame = frame_reader.frame
@@ -94,11 +94,11 @@ def cmd_record(
                 logger.info(f"Recorded {frame_count} frames")
         
         logger.info(f"✅ Recording complete: {frame_count} frames")
-        mission.set_status("recorded")
+        mission.set_status(MissionStatus.RECORDED)
         
     except KeyboardInterrupt:
         logger.info("⏹️ Recording interrupted by user")
-        mission.set_status("recorded")
+        mission.set_status(MissionStatus.RECORDED)
     
     finally:
         tello.streamoff()

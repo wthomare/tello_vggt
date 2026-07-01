@@ -96,8 +96,10 @@ class Mission:
         """Get mission status."""
         return self.metadata.status
     
-    def set_status(self, status: MissionStatus) -> None:
+    def set_status(self, status: MissionStatus | str) -> None:
         """Update mission status."""
+        if isinstance(status, str):
+            status = MissionStatus(status)
         self.metadata.status = status
         self.metadata.updated_at = datetime.now().isoformat()
         self.save_metadata()

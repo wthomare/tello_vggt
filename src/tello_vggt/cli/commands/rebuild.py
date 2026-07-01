@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional
 
 from tello_vggt.core.config import AppConfig
-from tello_vggt.core.mission import Mission, MissionManager
+from tello_vggt.core.mission import Mission, MissionStatus
 from tello_vggt.core.logging_config import get_logger, log_section
 from tello_vggt.mission_loader import MissionLoader, load_frames
 from tello_vggt.vggt_chunk_fusioner import VGGTChunkFusioner
@@ -105,7 +104,7 @@ def cmd_rebuild(
         mask_white_bg=config.export.mask_white_background,
     )
     
-    mission.set_status("completed")
+    mission.set_status(MissionStatus.COMPLETED)
     
     logger.info(f"\n✨ Rebuild complete! GLB: {glb_path}\n")
     return glb_path

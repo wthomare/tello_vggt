@@ -43,6 +43,19 @@ gaussian_splatting:
   iterations: 7000
   deep_anything_v3_checkpoint: null # Path to Deep Anything V3 checkpoint
 
+# Depth Anything 3
+depth_anything_3:
+  model_id: null                    # Hugging Face model ID or local model directory
+  checkpoint_path: null             # Optional .pt/.pth/.jit checkpoint path
+  model_import: null                # Optional "module.submodule:factory" for local DA3 code
+  input_size: null                  # Optional square resize for callable torch models
+  metric_scale: 1.0                 # Scale multiplier applied to predicted depth
+  frame_stride: 1                   # Process one frame every N frames
+  max_frames: null                  # Limit processed frames on Jetson if needed
+  point_stride: 4                   # Pixel stride for point cloud export
+  max_points: 500000                # Cap exported point cloud size
+  focal_length_px: null             # Optional focal length for back-projection
+
 # Paths
 missions_dir: "missions"
 checkpoints_dir: "checkpoints"

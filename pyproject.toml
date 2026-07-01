@@ -51,6 +51,8 @@ dependencies = [
 [project.optional-dependencies]
 
 vggt = [
+    "torch>=2.0",
+    "torchvision>=0.15",
     "einops>=0.8",
     "timm>=1.0",
     "transformers>=4.53",
@@ -60,14 +62,16 @@ vggt = [
 ]
 
 gaussian-splatting = [
-    "diff-gaussian-rasterization>=0.2.0",
-    "simple-knn>=0.1",
     "plyfile>=1.0",
 ]
 
 deep-anything-v3 = [
     "torch>=2.0",
     "torchvision>=0.15",
+    "transformers>=4.53",
+    "accelerate>=1.8",
+    "safetensors>=0.5",
+    "plyfile>=1.0",
 ]
 
 dev = [

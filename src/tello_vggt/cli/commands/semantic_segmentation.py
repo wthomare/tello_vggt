@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Optional
 
 import numpy as np
+import cv2
 
 from tello_vggt.core.config import AppConfig
 from tello_vggt.core.mission import Mission
@@ -86,7 +87,7 @@ def cmd_semantic_segmentation(
     )
     
     # Process VGGT result
-    frames_array = np.stack(frames)  # (N, H, W, 3)
+    frames_array = np.stack([cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in frames])
     
     da_result = processor.process_vggt_result(
         vggt_result,

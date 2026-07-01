@@ -25,6 +25,7 @@ def test_config_to_yaml():
     assert "vggt:" in yaml_str
     assert "inference:" in yaml_str
     assert "gaussian_splatting:" in yaml_str
+    assert "depth_anything_3:" in yaml_str
 
 
 def test_config_save_and_load(temp_dir):

@@ -11,7 +11,7 @@ import torch
 from tqdm import tqdm
 
 from tello_vggt.core.config import AppConfig
-from tello_vggt.core.mission import Mission, MissionManager
+from tello_vggt.core.mission import Mission, MissionManager, MissionStatus
 from tello_vggt.core.logging_config import get_logger, log_section
 from tello_vggt.mission_loader import load_frames
 from tello_vggt.vggt_omega_tello_inferencer import VGGTOmegaTelloInferencer
@@ -204,8 +204,11 @@ def cmd_video(
     # Create mission
     mission_manager = MissionManager(config.missions_dir)
     if output_dir:
-        mission_id = Path(output_dir).name
-        mission = Mission.create(config.missions_dir, mission_id)
+        output_dir = Path(output_dir)
+        if output_dir.exists():
+            raise FileExistsError(f"Mission already exists: {output_dir}")
+        mission = Mission(output_dir.name, output_dir)
+        mission.setup()
     else:
         mission = mission_manager.create_mission()
     
@@ -218,14 +221,14 @@ def cmd_video(
         
         # Run inference
         if not skip_inference:
-            mission.set_status("inferencing")
+            mission.set_status(MissionStatus.INFERENCING)
             _run_inference(video_path, config, mission.chunks_dir)
-            mission.set_status("inferenced")
+            mission.set_status(MissionStatus.INFERENCED)
         
         # Fuse chunks
         if not skip_export and mission.num_chunks > 0:
             fused_result = _fuse_chunks(config, mission.chunks_dir)
-            mission.set_status("fusing")
+            mission.set_status(MissionStatus.FUSING)
             
             # Export GLB
             glb_path = _export_glb(
@@ -235,15 +238,15 @@ def cmd_video(
                 mission.glb_path,
             )
             
-            mission.set_status("completed")
+            mission.set_status(MissionStatus.COMPLETED)
             logger.info(f"\n✨ Mission completed! GLB: {glb_path}\n")
             
             return glb_path
         else:
-            mission.set_status("completed")
+            mission.set_status(MissionStatus.COMPLETED)
             return mission.mission_dir
     
     except Exception as e:
         logger.error(f"❌ Mission failed: {e}", exc_info=True)
-        mission.set_status("failed")
+        mission.set_status(MissionStatus.FAILED)
         raise

@@ -201,6 +201,64 @@ class GaussianSplattingConfig(BaseModel):
     model_config = {"use_enum_values": True}
 
 
+class DepthAnything3Config(BaseModel):
+    """Depth Anything 3 model and export configuration."""
+
+    model_id: Optional[str] = Field(
+        default=None,
+        description="Hugging Face model ID or local model directory"
+    )
+    checkpoint_path: Optional[Path] = Field(
+        default=None,
+        description="Depth Anything 3 checkpoint path"
+    )
+    model_import: Optional[str] = Field(
+        default=None,
+        description="Optional local factory in the form 'module.submodule:factory'"
+    )
+    input_size: Optional[int] = Field(
+        default=None,
+        ge=128,
+        le=2048,
+        description="Optional square resize used by callable PyTorch models"
+    )
+    metric_scale: float = Field(
+        default=1.0,
+        gt=0.0,
+        description="Scale multiplier applied to predicted depth"
+    )
+    frame_stride: int = Field(
+        default=1,
+        ge=1,
+        description="Use one frame every N frames"
+    )
+    max_frames: Optional[int] = Field(
+        default=None,
+        ge=1,
+        description="Maximum number of frames to process"
+    )
+    point_stride: int = Field(
+        default=4,
+        ge=1,
+        description="Pixel stride for point cloud export"
+    )
+    max_points: int = Field(
+        default=500_000,
+        ge=1,
+        description="Maximum exported point count"
+    )
+    focal_length_px: Optional[float] = Field(
+        default=None,
+        gt=0.0,
+        description="Fallback focal length in pixels for depth back-projection"
+    )
+
+    @field_validator("checkpoint_path", mode="before")
+    @classmethod
+    def convert_checkpoint_path(cls, v: Any) -> Optional[Path]:
+        return Path(v) if v else None
+
+
 class AppConfig(BaseModel):
     """Main application configuration."""
     
@@ -210,6 +268,7 @@ class AppConfig(BaseModel):
     acquisition: AcquisitionConfig = Field(default_factory=AcquisitionConfig)
     export: ExportConfig = Field(default_factory=ExportConfig)
     gaussian_splatting: GaussianSplattingConfig = Field(default_factory=GaussianSplattingConfig)
+    depth_anything_3: DepthAnything3Config = Field(default_factory=DepthAnything3Config)
     
     # Paths
     missions_dir: Path = Field(
@@ -261,11 +320,11 @@ class AppConfig(BaseModel):
 
     def to_dict(self) -> dict[str, Any]:
         """Convert config to dictionary."""
-        return self.model_dump()
+        return self.model_dump(mode="json")
 
     def to_yaml(self) -> str:
         """Convert config to YAML string."""
-        return yaml.dump(self.model_dump(), default_flow_style=False, sort_keys=False)
+        return yaml.safe_dump(self.to_dict(), default_flow_style=False, sort_keys=False)
 
     def save_yaml(self, path: str | Path) -> None:
         """Save configuration to YAML file."""

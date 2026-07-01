@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Optional, Sequence
+from typing import Any, Optional, Sequence, TYPE_CHECKING
 
 import numpy as np
-import trimesh
 import pickle
+
+if TYPE_CHECKING:
+    import trimesh
 
 try:
     from visual_util import predictions_to_glb
@@ -187,7 +189,7 @@ class VGGTGlbExporter:
         
         predictions = self.build_predictions(result, frames=frames)
 
-        scene: trimesh.Scene = predictions_to_glb(
+        scene = predictions_to_glb(
             predictions,
             conf_thres=conf_thres,
             filter_by_frames="all",
@@ -210,7 +212,7 @@ exporter = VGGTGlbExporter(input_is_bgr=True)
 glb_path = exporter.export_glb(
     result=chunk_result,
     out_path="outputs/reconstruction.glb",
-    frames=tello_frames,   # liste de frames BGR OpenCV, si tu ne les as pas déjà dans result.raw["images"]
+    frames=tello_frames,   # liste de frames BGR OpenCV
     conf_thres=50.0,
     show_cam=True,
 )

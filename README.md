@@ -96,6 +96,27 @@ tello-vggt gaussian-splatting missions/mission_001
 
 Generates Gaussian-based rendering output from the reconstructed mission.
 
+### Depth Anything 3
+
+```bash
+tello-vggt depth-anything-3 ~/Videos/input.mp4 \
+  --config config.yaml \
+  --model-id your-depth-anything-3-model
+```
+
+For a local Depth Anything 3 clone, expose a small factory and point the CLI to it:
+
+```bash
+PYTHONPATH=external/depth-anything-3:$PYTHONPATH \
+tello-vggt depth-anything-3 ~/Videos/input.mp4 \
+  --config config.yaml \
+  --model-import depth_anything_3_adapter:create_model \
+  --checkpoint checkpoints/depth-anything-3.pt
+```
+
+The command exports normalized depth PNGs, a compressed depth NPZ, a colored PLY point
+cloud, and a Gaussian initialization NPZ.
+
 ### Semantic segmentation
 
 ```bash

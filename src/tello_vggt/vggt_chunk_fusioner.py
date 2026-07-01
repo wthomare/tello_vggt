@@ -115,7 +115,12 @@ class VGGTChunkFusioner:
 
         return left_obj == right_obj
 
-    def _concat(self, left: VGGTChunkResult, right: VGGTChunkResult, overlap: int) -> VGGTChunkResult:
+    def _concat(
+        self,
+        left: VGGTChunkResult,
+        right: VGGTChunkResult,
+        overlap: int,
+    ) -> VGGTChunkResult:
         """
         Concatène en supprimant les frames dupliquées au début de right.
         """
@@ -142,10 +147,16 @@ class VGGTChunkFusioner:
             return np.concatenate([left, right], axis=0)
         return np.concatenate([left, right[overlap:]], axis=0)
 
-    def _merge_raw(self, left_raw: Dict[str, Any], right_raw: Dict[str, Any], overlap: int) -> Dict[str, Any]:
+    def _merge_raw(
+        self,
+        left_raw: Dict[str, Any],
+        right_raw: Dict[str, Any],
+        overlap: int,
+    ) -> Dict[str, Any]:
         """
         Fusion simple de raw:
-        - les clés communes contenant des séquences ou arrays sont concaténées en supprimant l'overlap côté droit
+        - les clés communes contenant des séquences ou arrays sont concaténées en supprimant
+          l'overlap côté droit
         - sinon, on garde la valeur du gauche si elle existe, sinon celle du droit
         """
         out: Dict[str, Any] = dict(left_raw)
@@ -162,7 +173,12 @@ class VGGTChunkFusioner:
 
     def _merge_values(self, lval: Any, rval: Any, overlap: int) -> Any:
         if isinstance(lval, np.ndarray) and isinstance(rval, np.ndarray):
-            if lval.ndim >= 1 and rval.ndim >= 1 and lval.shape[0] >= overlap and rval.shape[0] >= overlap:
+            if (
+                lval.ndim >= 1
+                and rval.ndim >= 1
+                and lval.shape[0] >= overlap
+                and rval.shape[0] >= overlap
+            ):
                 try:
                     return np.concatenate([lval, rval[overlap:]], axis=0)
                 except Exception:

@@ -1,0 +1,32 @@
+vggt:
+  checkpoint_path: "checkpoints/VGGT-Omega.pt"
+  image_resolution: 384
+  mode: balanced
+  enable_alignment: false
+  device: cuda
+  half_precision: true
+
+inference:
+  chunk_size: 40
+  overlap: 5
+  batch_size: 4
+  min_overlap_fusion: 1
+  max_overlap_fusion: 20
+  use_allclose_fusion: true
+
+gaussian_splatting:
+  enabled: true
+  backend: gaussian_splatting
+  sh_degree: 3
+  densification_interval: 100
+  iterations: 7000
+
+depth_anything_3:
+  model_id: null
+  checkpoint_path: null
+  model_import: null
+  frame_stride: 1
+  max_frames: null
+  point_stride: 4
+  max_points: 500000
+  metric_scale: 1.0

@@ -90,7 +90,11 @@ def record(
 ):
     """Record video from DJI Tello drone."""
     config = setup_context(config_path=config_path)
-    logger.info(f"Starting Tello recording for {duration}s" if duration else "Starting Tello recording until interrupt")
+    logger.info(
+        f"Starting Tello recording for {duration}s"
+        if duration
+        else "Starting Tello recording until interrupt"
+    )
     
     from tello_vggt.cli.commands.record import cmd_record
     cmd_record(config=config, duration=duration, output_dir=output)
@@ -264,6 +268,48 @@ def gaussian_splatting(
         mission_path=mission,
         output=output,
         skip_training=skip_training,
+    )
+
+
+@app.command()
+def depth_anything_3(
+    input_path: Annotated[
+        Path,
+        typer.Argument(help="Input video file, mission directory, or mission ID"),
+    ],
+    output: Annotated[
+        Optional[Path],
+        typer.Option("--output", "-o", help="Output directory")
+    ] = None,
+    model_id: Annotated[
+        Optional[str],
+        typer.Option("--model-id", help="Hugging Face model ID or local model directory")
+    ] = None,
+    checkpoint: Annotated[
+        Optional[Path],
+        typer.Option("--checkpoint", help="Depth Anything 3 checkpoint path")
+    ] = None,
+    model_import: Annotated[
+        Optional[str],
+        typer.Option("--model-import", help="Local factory as 'module.submodule:factory'")
+    ] = None,
+    config_path: Annotated[
+        Optional[Path],
+        typer.Option("--config", "-c", help="Configuration YAML file")
+    ] = None,
+):
+    """Run Depth Anything 3 depth estimation and export PLY/Gaussian initialization."""
+    config = setup_context(config_path=config_path)
+
+    from tello_vggt.cli.commands.depth_anything_3 import cmd_depth_anything_3
+
+    cmd_depth_anything_3(
+        config=config,
+        input_path=input_path,
+        output=output,
+        model_id=model_id,
+        checkpoint=checkpoint,
+        model_import=model_import,
     )
 
 

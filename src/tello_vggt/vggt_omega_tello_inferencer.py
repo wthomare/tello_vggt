@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import tempfile
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence
+from typing import Any, Dict, Iterable, Iterator, List, Sequence
 
 import numpy as np
 import torch
@@ -13,18 +12,7 @@ from vggt_omega.models import VGGTOmega
 from vggt_omega.utils.load_fn import load_and_preprocess_images
 from vggt_omega.utils.pose_enc import encoding_to_camera
 
-
-@dataclass
-class VGGTChunkResult:
-    """
-    Résultat d'inférence pour un batch de frames.
-    Les tenseurs sont convertis en numpy pour être plus simples à manipuler.
-    """
-    extrinsics: np.ndarray
-    intrinsics: np.ndarray
-    depth: np.ndarray
-    depth_conf: np.ndarray
-    raw: Dict[str, Any]
+from tello_vggt.vggt_chunk_result import VGGTChunkResult
 
 
 class VGGTOmegaTelloInferencer:

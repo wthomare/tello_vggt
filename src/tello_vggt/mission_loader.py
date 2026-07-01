@@ -27,7 +27,11 @@ def load_frames(frames_dir: str | Path):
     frames_dir = Path(frames_dir)
 
     frame_files = sorted(
-        frames_dir.glob("frame_*.jpg")
+        [
+            *frames_dir.glob("frame_*.jpg"),
+            *frames_dir.glob("frame_*.jpeg"),
+            *frames_dir.glob("frame_*.png"),
+        ]
     )
 
     frames = []
